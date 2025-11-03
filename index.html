@@ -1,0 +1,574 @@
+
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O Portal da Água - Jornada Temporal</title>
+    
+    <style>
+        /* Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212; /* Fundo muito escuro */
+            color: #f0f0f0; /* Texto claro */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        /* Telas */
+        .tela {
+            display: none;
+            width: 100%;
+            max-width: 1400px;
+            padding: 20px;
+        }
+
+        .tela.ativa {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            gap: 30px;
+        }
+
+        /* Botões Padrão */
+        button {
+            padding: 12px 25px;
+            font-size: 16px;
+            background-color: #1c1c1c;
+            border: 2px solid #1e90ff; /* Neon Azul (Deep Sky Blue) */
+            color: #f0f0f0;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s ease-in-out;
+            font-weight: bold;
+        }
+
+        button:hover:not(:disabled) {
+            background-color: #1e90ff;
+            color: #121212;
+            transform: translateY(-2px);
+        }
+        
+        button:disabled {
+            border-color: #555;
+            color: #777;
+            cursor: not-allowed;
+            background-color: #1c1c1c;
+        }
+
+        /* Container do Viajante (Tela Inicial/Transição) */
+        .container-viajante {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            max-width: 100%;
+            padding: 20px;
+            background-color: #1b1b1b;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(30, 144, 255, 0.4);
+        }
+        
+        #tela-introducao {
+            background-color: #1b1b1b;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(30, 144, 255, 0.4);
+            padding: 40px;
+        }
+
+        /* 🖼️ AJUSTE DE TAMANHO: Imagem do Portal/Viajante - REDUÇÃO */
+        .viajante {
+            /* width: 45%; */ /* Mantendo 45% */
+            max-width: 450px; /* Reduzido de 600px para 450px */
+            max-height: 40vh; /* Novo: Limita a altura máxima a 40% da altura da tela */
+            height: auto;
+            border-radius: 15px;
+            box-shadow: 0 0 15px rgba(30, 144, 255, 0.5);
+        }
+
+        /* Container das Perguntas */
+        .container-pergunta {
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            width: 100%;
+        }
+
+        /* Imagem do cenário */
+        .cenario {
+            /* width: 45%; */ /* Mantendo 45% */
+            max-width: 500px;
+            height: auto;
+            border-radius: 15px;
+            box-shadow: 0 0 15px rgba(30, 144, 255, 0.3);
+        }
+
+        /* Texto e alternativas */
+        .texto-pergunta-container {
+            width: 45%;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .texto-pergunta {
+             font-size: 20px;
+             line-height: 1.4;
+             padding: 10px;
+             border-left: 3px solid #1e90ff;
+             background-color: #1c1c1c;
+             border-radius: 5px;
+             text-align: justify;
+        }
+
+        #alternativas {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            width: 100%;
+        }
+        
+        /* Estilo para as Alternativas */
+        #alternativas button {
+            background-color: #1c1c1c;
+            border: 2px solid #555;
+            color: #f0f0f0;
+            text-align: left;
+            padding: 15px 20px;
+            font-size: 16px;
+        }
+
+        #alternativas button:hover:not(.selecionada) {
+            background-color: #2a2a2a;
+            border-color: #1e90ff;
+            color: #f0f0f0;
+            transform: none;
+        }
+        
+        /* Alternativa Selecionada (Feedback) */
+        #alternativas button.selecionada {
+            background-color: #1e90ff; /* Cor Neon */
+            color: #121212;
+            border-color: #1e90ff;
+            box-shadow: 0 0 10px rgba(30, 144, 255, 0.8);
+        }
+
+        /* 🖼️ AJUSTE DE TAMANHO: Imagem do Resultado - REDUÇÃO */
+        #imagem-resultado {
+            max-width: 80%; /* Reduzido de 90% para 80% */
+            max-height: 55vh; /* Novo: Limita a altura máxima */
+            height: auto;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(30, 144, 255, 0.5);
+            margin-bottom: 20px;
+        }
+
+        /* ✏️ AJUSTE DE TAMANHO: Texto do Resultado - REDUÇÃO */
+        #texto-resultado {
+            font-size: 20px; /* Reduzido de 22px para 20px */
+            text-align: justify;
+            white-space: pre-line;
+            padding: 15px;
+            background-color: #1b1b1b;
+            border-radius: 10px;
+            border: 1px solid #1e90ff;
+        }
+
+        /* Texto do Viajante */
+        #texto-introducao, #texto-transicao {
+            font-size: 18px;
+            max-width: 600px;
+            text-align: justify;
+            line-height: 1.5;
+            padding: 10px;
+        }
+        
+        /* Responsividade */
+        @media (max-width: 800px) {
+            .container-pergunta {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            /* 📱 AJUSTE DE TAMANHO: Imagens em Mobile */
+            .cenario, .texto-pergunta-container, .viajante {
+                width: 90%;
+                max-width: 100%;
+            }
+            
+            /* Ajuste extra para telas muito pequenas no resultado */
+            #imagem-resultado {
+                 max-height: 45vh; /* Mais restrito em mobile */
+            }
+            
+            .viajante {
+                 max-height: 35vh; /* Mais restrito em mobile */
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <audio id="audio-jogo" preload="auto"></audio>
+
+    <div id="container">
+
+        <section id="tela-inicial" class="tela ativa">
+            <header>
+                <h1>💧 Decisões que Moldam o Futuro
+</h1>
+                            </header>
+            <main>
+                <button id="btn-comecar">INICIAR JORNADA</button>
+            </main>
+        </section>
+
+        <section id="tela-introducao" class="tela">
+             <div class="container-viajante">
+                 <img id="imagem-portal" src="imagens/portal_inativo.jpg" alt="Portal Temporal" class="viajante">
+                 <div class="texto-area">
+                     <p id="texto-portal" class="texto-introducao"></p> 
+                     <button id="btn-comecar-decisoes">ENTRAR NO PORTAL DE DECISÕES</button>
+                     <button id="btn-ir-futuro" style="display:none;">VER MEU FUTURO</button>
+                 </div>
+             </div>
+        </section>
+
+        <section id="tela-pergunta" class="tela">
+            <div class="container-pergunta">
+                <img id="imagem-cenario" src="" alt="Cenário da Pergunta" class="cenario">
+                <div class="texto-pergunta-container">
+                    <p id="texto-pergunta" class="texto-pergunta"></p>
+                    <div id="alternativas" class="alternativas-grid">
+                        </div>
+                    <button id="btn-proxima" disabled class="proxima">PRÓXIMA DECISÃO</button>
+                </div>
+            </div>
+        </section>
+
+        <section id="tela-resultado" class="tela">
+    <img id="imagem-resultado" src="" alt="Cenário do Futuro" class="cenario">
+    <div class="resultado-area">
+        <!-- Remova este h2 -->
+        <!-- <h2>Seu Futuro Criado:</h2> -->
+        <p id="texto-resultado"></p>
+        <button id="btn-recomecar" class="recomecar">RECOMEÇAR A JORNADA</button>
+    </div>
+</section>
+
+
+    </div>
+
+    <script>
+        let perguntaAtual = 0;
+        let pontuacao = 0;
+
+        // Telas
+        const telaInicial = document.getElementById("tela-inicial");
+        const telaIntroducao = document.getElementById("tela-introducao");
+        const telaPergunta = document.getElementById("tela-pergunta");
+        const telaResultado = document.getElementById("tela-resultado");
+
+        // Elementos perguntas
+        const textoPergunta = document.getElementById("texto-pergunta");
+        const alternativasDiv = document.getElementById("alternativas");
+        const btnProxima = document.getElementById("btn-proxima");
+        const imagemPergunta = document.getElementById("imagem-cenario");
+        const audio = document.getElementById("audio-jogo");
+
+        // Elementos portal
+        const imagemPortal = document.getElementById("imagem-portal");
+        const textoPortal = document.getElementById("texto-portal");
+        const btnIrFuturo = document.getElementById("btn-ir-futuro"); 
+
+        // Áudio portal inativo e ativo
+        const audioPortalInativo = "audio/audio_01_intro.mp3"; 
+        const audioPortalAtivo = "audio/audio_13_fluxo.mp3";
+
+        // Elementos resultado
+        const imagemResultado = document.getElementById("imagem-resultado");
+        const textoResultado = document.getElementById("texto-resultado");
+
+        // Novos textos de transição/resultado
+        const TEXTO_INTRODUCAO = "Saudações, Viajante! Eu sou o elo entre o agora e o amanhã. Olhe para este portal: ele está pronto para nos levar ao futuro, mas só se ativará após você tomar dez decisões críticas. Suas escolhas aqui são a semente de um futuro distante. Prepare-se: o destino da Água no nosso planeta está em suas mãos! Vamos começar. Ouça com atenção!";
+        const TEXTO_PORTAL_ATIVO = "Decisões concluídas! Suas dez escolhas foram registradas no tempo. O portal está ativado! A energia é crítica, e a revelação final está prestes a acontecer.\nFeche os olhos, Viajante. O processo será intenso. Eu o levarei ao futuro que você criou, e só então você poderá ver...";
+
+        // Dados das perguntas (ATUALIZADOS COM SEUS TEXTOS)
+        const perguntas = [
+            { audio: "audio/audio_02_q1.mp3", imagem: "imagens/cenarios/cenario_seca.jpg", texto: "O futuro mostra uma cidade em crise de seca. A primeira questão é sobre a prioridade. Como esta comunidade deve gerenciar o pouco que resta? Escute as opções:", alternativas: [
+                { letra: "A", texto: "Que a água seja usada apenas para indústrias.", valor: -10 },
+                { letra: "B", texto: "Que todos tenham acesso, mas com controle de uso.", valor: 10 },
+                { letra: "C", texto: "Que seja usada apenas em tempos de seca extrema.", valor: -5 },
+                { letra: "D", texto: "Que o reservatório fique cheio o tempo todo, mesmo que desperdice.", valor: -10 }
+            ]},
+            { audio: "audio/audio_03_q2.mp3", imagem: "imagens/cenarios/cenario_escola.jpg", texto: "Estamos vendo uma escola que busca soluções. Mas qual ação tem o poder de permanência e economiza a água por anos? Decida o método:", alternativas: [
+                { letra: "A", texto: "Fazer campanhas com cartazes.", valor: -5 },
+                { letra: "B", texto: "Criar um sistema de reaproveitamento da água da chuva.", valor: 10 },
+                { letra: "C", texto: "Colocar avisos nos banheiros.", valor: -5 },
+                { letra: "D", texto: "Pedir para os alunos tomarem banho mais rápido em casa.", valor: 5 }
+            ]},
+            { audio: "audio/audio_04_q3.mp3", imagem: "imagens/cenarios/cenario_aquecimento.jpg", texto: "Olhe o termômetro do planeta! Ele está subindo. O calor é o motor do ciclo da água. Qual a consequência direta e mais grave desse aquecimento para a água global? O ciclo está em perigo:", alternativas: [
+                { letra: "A", texto: "Mais derretimento de gelo e aumento do nível do mar.", valor: 10 },
+                { letra: "B", texto: "A água vai sumir completamente.", valor: -10 },
+                { letra: "C", texto: "As chuvas vão parar de acontecer.", valor: -5 },
+                { letra: "D", texto: "Nada muda, a natureza se adapta sozinha.", valor: -10 }
+            ]},
+            { audio: "audio/audio_05_q4.mp3", imagem: "imagens/cenarios/cenario_asfalto_enchente.jpg", texto: "Estamos em um bairro vulnerável a inundações. Onde a água não consegue infiltrar, ela destrói. Qual é a solução ecológica para permitir que o solo receba a chuva, evitando desastres? Escolha a atitude que ajuda a terra:", alternativas: [
+                { letra: "A", texto: "Jogar o lixo nos bueiros pra 'tampar' a água.", valor: -10 },
+                { letra: "B", texto: "Fazer mais calçadas e menos árvores.", valor: -10 },
+                { letra: "C", texto: "Criar áreas verdes e plantar árvores.", valor: 10 },
+                { letra: "D", texto: "Construir casas em locais de alagamento.", valor: -5 }
+            ]},
+            { audio: "audio/audio_06_q5.mp3", imagem: "imagens/cenarios/cenario_reserva.jpg", texto: "O futuro é incerto: secas, poluição e extremos. O que acontece com a pequena parte da água doce utilizável se o clima continuar a mudar rapidamente? Qual o destino da nossa reserva?", alternativas: [
+                { letra: "A", texto: "Vai aumentar, porque o gelo derrete.", valor: -5 },
+                { letra: "B", texto: "Vai diminuir, por causa das secas e poluição.", valor: -10 },
+                { letra: "C", texto: "Vai continuar igual, nada muda.", valor: -5 },
+                { letra: "D", texto: "Vai se transformar em água salgada.", valor: -10 }
+            ]},
+            { audio: "audio/audio_07_q6.mp3", imagem: "imagens/cenarios/cenario_fabrica.jpg", texto: "A indústria consome muito. Uma fábrica quer mostrar ser sustentável. Qual ação demonstra o compromisso real com a preservação da água, e não apenas marketing? Defina a prioridade:", alternativas: [
+                { letra: "A", texto: "Tratar e reutilizar a água antes de jogar fora.", valor: 10 },
+                { letra: "B", texto: "Pintar as paredes de verde e azul.", valor: -5 },
+                { letra: "C", texto: "Lançar campanhas nas redes sociais sem mudar nada.", valor: -10 },
+                { letra: "D", texto: "Lavar o chão com mangueira todo dia.", valor: -10 }
+            ]},
+            { audio: "audio/audio_08_q7.mp3", imagem: "imagens/cenarios/cenario_desmatamento.jpg", texto: "O desmatamento avança. As árvores não são apenas madeira; são reguladores climáticos. Qual é a consequência direta do desaparecimento das florestas sobre os rios e a chuva? Pense na cadeia da vida:", alternativas: [
+                { letra: "A", texto: "Vai chover mais, pois o solo esquenta.", valor: -5 },
+                { letra: "B", texto: "Vai chover menos e os rios podem secar.", valor: 10 },
+                { letra: "C", texto: "Nada muda, a chuva vem do oceano.", valor: -5 },
+                { letra: "D", texto: "As árvores não têm relação com a água.", valor: -10 }
+            ]},
+            { audio: "audio/audio_09_q8.mp3", imagem: "imagens/cenarios/cenario_ilha_calor.jpg", texto: "Cidades são ilhas de calor. Qual dessas escolhas é duplamente benéfica: resfria o ambiente e conserva a água? Faça sua dupla jogada:", alternativas: [
+                { letra: "A", texto: "Plantar árvores e cuidar dos jardins.", valor: 10 },
+                { letra: "B", texto: "Usar mangueira pra molhar o chão todos os dias.", valor: -10 },
+                { letra: "C", texto: "Deixar o ar-condicionado ligado o tempo todo.", valor: -10 },
+                { letra: "D", texto: "Jogar fora a água que sobra das garrafas.", valor: -5 }
+            ]},
+            { audio: "audio/audio_10_q9.mp3", imagem: "imagens/cenarios/cenario_globo_agua.jpg", texto: "O planeta é azul, mas a maior parte da água étexto-portaltexto-portal inútil para beber. Qual é a principal barreira que impede a humanidade de usar toda a água da Terra para a vida diária? Descubra o segredo do volume:", alternativas: [
+                { letra: "A", texto: "A maioria é salgada ou está congelada.", valor: 10 },
+                { letra: "B", texto: "Está escondida debaixo do solo.", valor: -5 },
+                { letra: "C", texto: "As pessoas não sabem onde ela está.", valor: -5 },
+                { letra: "D", texto: "O planeta perdeu parte da água pro espaço.", valor: -10 }
+            ]},
+            // OBSERVAÇÃO: Corrigido o erro de áudio_10_q9 repetido para audio_11_q10.
+            { audio: "audio/audio_11_q10.mp3", imagem: "imagens/cenarios/cenario_reflexao.jpg", texto: "Chegamos ao fim da sua rodada de escolhas. Qual mensagem final e essencial você enviaria para as gerações que virão sobre o uso da água? Deixe seu legado:", alternativas: [
+                { letra: "A", texto: "'Use com cuidado, cada gota conta.’", valor: 10 },
+                { letra: "B", texto: "'Tem tanta água que nunca vai faltar.’", valor: -5 },
+                { letra: "C", texto: "'Não se preocupe, o clima vai resolver tudo.'", valor: -10 },
+                { letra: "D", texto: "'Aproveite agora, o futuro que se vire.'", valor: -10 }
+            ]}
+        ];
+
+        // Função tocar áudio
+        function tocarAudio(src, callback) {
+            audio.src = src;
+            audio.onended = callback || null;
+            audio.load(); 
+            // O catch lida com a restrição de autoplay do navegador
+            audio.play().catch(e => {
+                console.warn("Reprodução automática de áudio falhou (restrição do navegador).", e);
+            });
+        }
+
+        // Mostrar pergunta
+        function mostrarPergunta() {
+            const p = perguntas[perguntaAtual];
+            textoPergunta.textContent = p.texto;
+            alternativasDiv.innerHTML = "";
+            btnProxima.disabled = true;
+            imagemPergunta.src = p.imagem;
+            tocarAudio(p.audio);
+
+            p.alternativas.forEach((alt) => {
+                const btn = document.createElement("button");
+                btn.textContent = `${alt.letra}) ${alt.texto}`;
+                btn.classList.add("botao-alternativa");
+                btn.dataset.valor = alt.valor;
+
+                btn.addEventListener("click", () => {
+                    const selecionada = alternativasDiv.querySelector(".selecionada");
+                    
+                    // 1. Lógica Correta: Subtrai a pontuação anterior se houver
+                    if (selecionada) {
+                        pontuacao -= parseInt(selecionada.dataset.valor);
+                        selecionada.classList.remove("selecionada");
+                    }
+                    
+                    // 2. Lógica Correta: Adiciona a pontuação da nova alternativa
+                    btn.classList.add("selecionada");
+                    pontuacao += parseInt(btn.dataset.valor);
+                    btnProxima.disabled = false;
+                    
+                    console.log("Pontuação Atual:", pontuacao);
+                });
+
+                alternativasDiv.appendChild(btn);
+            });
+        }
+
+        // Botão próxima pergunta
+        btnProxima.addEventListener("click", () => {
+            audio.pause();
+            audio.currentTime = 0;
+            perguntaAtual++;
+            if (perguntaAtual < perguntas.length) {
+                mostrarPergunta();
+            } else {
+                mostrarPortalAtivo();
+            }
+        });
+
+        // Portal inativo (início)
+        function mostrarPortalInativo() {
+            document.getElementById("btn-comecar-decisoes").style.display = "inline-block";
+            if (btnIrFuturo) { 
+                btnIrFuturo.style.display = "none";
+            }
+
+            telaInicial.classList.remove("ativa");
+            telaIntroducao.classList.add("ativa");
+            imagemPortal.src = "imagens/portal_inativo.jpg";
+            textoPortal.textContent = TEXTO_INTRODUCAO; // NOVO TEXTO AQUI
+            tocarAudio(audioPortalInativo);
+        }
+
+        // Portal ativo (transição final)
+        function mostrarPortalAtivo() {
+            document.getElementById("btn-comecar-decisoes").style.display = "none"; 
+            if (btnIrFuturo) {
+                btnIrFuturo.style.display = "inline-block";
+            }
+            
+            // Pausa qualquer áudio anterior
+            audio.pause(); 
+            audio.currentTime = 0;
+
+            telaPergunta.classList.remove("ativa");
+            telaIntroducao.classList.add("ativa");
+            imagemPortal.src = "imagens/portal_ativo.jpg";
+            textoPortal.textContent = TEXTO_PORTAL_ATIVO; // NOVO TEXTO AQUI
+            tocarAudio(audioPortalAtivo);
+        }
+
+       // Botão ir para o futuro
+if (btnIrFuturo) { 
+    btnIrFuturo.addEventListener("click", () => {
+        audio.pause();
+        audio.currentTime = 0;
+        telaIntroducao.classList.remove("ativa");
+        mostrarResultado();
+    });
+}
+
+// Mostrar resultado final
+function mostrarResultado() {
+    let resultado = "";
+    let imagemFinal = "";
+    let audioFinal = "";
+    const pontuacaoFinal = ` (Pontuação: ${pontuacao})`;
+
+    audio.pause();
+    audio.currentTime = 0;
+
+    // Primeiro toca o som da travessia
+    tocarAudio("audio/audio_14_travessia.mp3", function() {
+
+        // Função para sortear número entre 1 e 4
+        function sortearImagemAleatoria() {
+            return Math.floor(Math.random() * 4) + 1;
+        }
+
+        const numeroAleatorio = sortearImagemAleatoria();
+
+        // Escolha do cenário
+if (pontuacao >= 60) {
+    resultado = `🌳 Futuro Éden (Próspero)
+Incrível! Suas escolhas criaram um Futuro Próspero. A água flui livre, os rios estão cheios e a vida prospera. Obrigado por nos guiar para este Éden, Viajante.`;
+    imagemFinal = `imagens/eden/eden_${numeroAleatorio}.jpg`;
+    audioFinal = "audio/audio_final_eden.mp3";
+
+} else if (pontuacao >= 20) {
+    resultado = `🌿 Futuro em Recuperação
+O cenário é de Recuperação! A natureza começa a se reerguer, mas o planeta ainda enfrenta desafios. Continue com hábitos sustentáveis para garantir a vitória no amanhã!`;
+    imagemFinal = `imagens/recuperacao/recuperacao_${numeroAleatorio}.jpg`;
+    audioFinal = "audio/audio_final_recuperacao.mp3";
+
+} else if (pontuacao >= -19) {
+    resultado = `☁ Futuro no Limiar
+Atenção! Estamos no Limiar do Possível. Há esperança, mas o tempo está acabando. Temos pouco tempo para mudar o curso final.`;
+    imagemFinal = `imagens/limiar/limiar_${numeroAleatorio}.jpg`;
+    audioFinal = "audio/audio_final_limiar.mp3";
+
+} else if (pontuacao >= -59) {
+    resultado = `🔥 Futuro em Alerta
+ALERTA VERMELHO! O futuro está em Crise. A escassez de água e o calor são graves. É urgente mudar TUDO hoje, ou o pior cenário se concretizará!`;
+    imagemFinal = `imagens/alerta/alerta_${numeroAleatorio}.jpg`;
+    audioFinal = "audio/audio_final_alerta.mp3";
+
+} else {
+    resultado = `💀 Futuro Distopia
+O futuro que você viu é uma Distopia! O desperdício e a falta de ação trouxeram a escassez total. Volte ao presente e mude TUDO, ou o mundo secará!`;
+    imagemFinal = `imagens/distopia/distopia_${numeroAleatorio}.jpg`;
+    audioFinal = "audio/audio_final_distopia.mp3";
+}
+
+
+        // Mostra a tela de resultado
+        telaResultado.classList.add("ativa");
+
+        // --- Passo 1: mostra só a imagem ---
+        textoResultado.innerHTML = ""; // texto vazio no início
+        imagemResultado.src = imagemFinal;
+        document.getElementById("btn-recomecar").style.display = "none"; // botão escondido inicialmente
+
+        // --- Passo 2: após 2 segundos, mostra o texto completo e o botão ---
+        setTimeout(() => {
+            textoResultado.innerHTML = `<strong>Seu Futuro Criado:</strong><br>${resultado.replace(/\n/g, '<br>')}`;
+            document.getElementById("btn-recomecar").style.display = "inline-block"; // botão aparece
+            tocarAudio(audioFinal);
+        }, 2000); // 2 segundos de espera
+    });
+}
+
+// Botão recomeçar
+document.getElementById("btn-recomecar").addEventListener("click", () => {
+    pontuacao = 0;
+    perguntaAtual = 0;
+    telaResultado.classList.remove("ativa");
+    telaInicial.classList.add("ativa");
+    audio.pause();
+    audio.currentTime = 0;
+    audio.src = "";
+    audio.load();
+});
+
+
+
+        // Botões iniciar
+        document.getElementById("btn-comecar").addEventListener("click", mostrarPortalInativo);
+        document.getElementById("btn-comecar-decisoes").addEventListener("click", () => {
+            telaIntroducao.classList.remove("ativa");
+            telaPergunta.classList.add("ativa");
+            mostrarPergunta();
+        });
+        
+        // Inicializa o texto da tela de introdução
+        document.addEventListener('DOMContentLoaded', () => {
+            if (document.getElementById("texto-portal").textContent === "") {
+                document.getElementById("texto-portal").textContent = TEXTO_INTRODUCAO;
+            }
+        });
+    </script>
+</body>
+</html>
