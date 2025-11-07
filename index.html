@@ -1,4 +1,3 @@
-
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
@@ -13,15 +12,17 @@
             box-sizing: border-box;
         }
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #121212; /* Fundo muito escuro */
-            color: #f0f0f0; /* Texto claro */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-        }
+      body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #121212;
+    color: #f0f0f0;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+    overflow-y: auto; /* permite rolar a tela, evita corte */
+    padding: 30px 0; /* dá um respiro em cima e embaixo */
+}
+
 
         /* Telas */
         .tela {
@@ -187,7 +188,7 @@
         }
 
         /* Texto do Viajante */
-        #texto-introducao, #texto-transicao {
+        .texto-introducao, #texto-transicao {
             font-size: 18px;
             max-width: 600px;
             text-align: justify;
@@ -253,7 +254,7 @@
                     <p id="texto-pergunta" class="texto-pergunta"></p>
                     <div id="alternativas" class="alternativas-grid">
                         </div>
-                    <button id="btn-proxima" disabled class="proxima">PRÓXIMA DECISÃO</button>
+                    <button id="btn-proxima" disabled style="display:none;">PRÓXIMA DECISÃO</button>
                 </div>
             </div>
         </section>
@@ -355,7 +356,7 @@
                 { letra: "C", texto: "Deixar o ar-condicionado ligado o tempo todo.", valor: -10 },
                 { letra: "D", texto: "Jogar fora a água que sobra das garrafas.", valor: -5 }
             ]},
-            { audio: "audio/audio_10_q9.mp3", imagem: "imagens/cenarios/cenario_globo_agua.jpg", texto: "O planeta é azul, mas a maior parte da água étexto-portaltexto-portal inútil para beber. Qual é a principal barreira que impede a humanidade de usar toda a água da Terra para a vida diária? Descubra o segredo do volume:", alternativas: [
+            { audio: "audio/audio_10_q9.mp3", imagem: "imagens/cenarios/cenario_globo_agua.jpg", texto: "O planeta é azul, mas a maior parte da água é inútil para beber. Qual é a principal barreira que impede a humanidade de usar toda a água da Terra para a vida diária? Descubra o segredo do volume:", alternativas: [
                 { letra: "A", texto: "A maioria é salgada ou está congelada.", valor: 10 },
                 { letra: "B", texto: "Está escondida debaixo do solo.", valor: -5 },
                 { letra: "C", texto: "As pessoas não sabem onde ela está.", valor: -5 },
@@ -384,37 +385,45 @@
         // Mostrar pergunta
         function mostrarPergunta() {
             const p = perguntas[perguntaAtual];
+            window.scrollTo({ top: 0, behavior: "smooth" });
             textoPergunta.textContent = p.texto;
             alternativasDiv.innerHTML = "";
             btnProxima.disabled = true;
             imagemPergunta.src = p.imagem;
             tocarAudio(p.audio);
-
+  
             p.alternativas.forEach((alt) => {
-                const btn = document.createElement("button");
-                btn.textContent = `${alt.letra}) ${alt.texto}`;
-                btn.classList.add("botao-alternativa");
-                btn.dataset.valor = alt.valor;
+    const btn = document.createElement("button");
+    btn.textContent = `${alt.letra}) ${alt.texto}`;
+    btn.dataset.valor = alt.valor;
 
-                btn.addEventListener("click", () => {
-                    const selecionada = alternativasDiv.querySelector(".selecionada");
-                    
-                    // 1. Lógica Correta: Subtrai a pontuação anterior se houver
-                    if (selecionada) {
-                        pontuacao -= parseInt(selecionada.dataset.valor);
-                        selecionada.classList.remove("selecionada");
-                    }
-                    
-                    // 2. Lógica Correta: Adiciona a pontuação da nova alternativa
-                    btn.classList.add("selecionada");
-                    pontuacao += parseInt(btn.dataset.valor);
-                    btnProxima.disabled = false;
-                    
-                    console.log("Pontuação Atual:", pontuacao);
-                });
+    btn.addEventListener("click", () => {
+        const selecionada = alternativasDiv.querySelector(".selecionada");
 
-                alternativasDiv.appendChild(btn);
-            });
+        if (selecionada) {
+            pontuacao -= parseInt(selecionada.dataset.valor);
+            selecionada.classList.remove("selecionada");
+        }
+
+        btn.classList.add("selecionada");
+        pontuacao += parseInt(btn.dataset.valor);
+        console.log("Pontuação Atual:", pontuacao);
+
+        setTimeout(() => {
+            audio.pause();
+            audio.currentTime = 0;
+            perguntaAtual++;
+            if (perguntaAtual < perguntas.length) {
+                mostrarPergunta();
+            } else {
+                mostrarPortalAtivo();
+            }
+        }, 1000);
+    });
+
+    alternativasDiv.appendChild(btn);
+});
+
         }
 
         // Botão próxima pergunta
@@ -506,7 +515,7 @@ O cenário é de Recuperação! A natureza começa a se reerguer, mas o planeta 
 
 } else if (pontuacao >= -19) {
     resultado = `☁ Futuro no Limiar
-Atenção! Estamos no Limiar do Possível. Há esperança, mas o tempo está acabando. Temos pouco tempo para mudar o curso final.`;
+Atenção! Estamos no Limiar do Possível. Metade do planeta está degradada, há esperança, mas o tempo está acabando. Cada segundo conta a partir de agora.`;
     imagemFinal = `imagens/limiar/limiar_${numeroAleatorio}.jpg`;
     audioFinal = "audio/audio_final_limiar.mp3";
 
@@ -571,4 +580,5 @@ document.getElementById("btn-recomecar").addEventListener("click", () => {
         });
     </script>
 </body>
-</html>
+
+</html>  
